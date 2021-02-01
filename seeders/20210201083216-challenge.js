@@ -13,20 +13,23 @@ module.exports = {
     */
     await queryInterface.bulkInsert('Challenges', [
       {
-        "challenge": "Eat a piece of garlic",
+        "userId": "175045185976139785",
+        "title": "Eat a piece of garlic",
         "time": 694267200000,
         "worth": 21000000000,
-        "type": "",
         "positive": 2,
-        "negative": 1
+        "negative": 1,
+        "createdAt": new Date,
+        "updatedAt": new Date
       },
       {
-        "challenge": "Eat a piece of garlic",
-        "time": 694267200000,
-        "worth": 21000000000,
-        "type": "",
-        "positive": 2,
-        "negative": 1
+        "userId": "242093291447910420",
+        "title": "Exist",
+        "worth": 100000000,
+        "positive": 1,
+        "negative": 2,
+        "createdAt": new Date,
+        "updatedAt": new Date
       }
     ], {});
   },
