@@ -16,6 +16,7 @@ module.exports = (sequelize, DataTypes) => {
   Challenge.init({
     userId: DataTypes.STRING,
     title: DataTypes.STRING,
+    time: DataTypes.BIGINT,
     description: DataTypes.TEXT,
     worth: DataTypes.DOUBLE,
     type: DataTypes.STRING,
