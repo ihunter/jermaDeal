@@ -14,6 +14,12 @@
     "parse-duration": "^0.4.4",
     "parse-money": "^1.0.12",
     "parsecurrency": "^1.0.0",
+    "pg": "^8.5.1",
+    "pg-hstore": "^2.3.3",
+    "sequelize": "^6.5.0",
     "time-string-parser": "^1.0.4"
+  },
+  "devDependencies": {
+    "sequelize-cli": "^6.2.0"
   }
 }
