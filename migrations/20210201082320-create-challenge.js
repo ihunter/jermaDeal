@@ -11,6 +11,9 @@ module.exports = {
       userId: {
         type: Sequelize.STRING
       },
+      messageId: {
+        type: Sequelize.STRING
+      },
       title: {
         type: Sequelize.STRING
       },

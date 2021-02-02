@@ -3,6 +3,8 @@ const parseCurrency = require('parsecurrency');
 const parseTime = require('parse-duration');
 const fs = require("fs");
 
+const { Challenge } = require('./models')
+
 const client = new Discord.Client({ partials: ['MESSAGE', 'CHANNEL', 'REACTION'] });
 
 const LocalDatabase = require("./LocalDatabase");
@@ -98,7 +100,8 @@ client.on('message', async (message) => {
         message.channel.send("```\n" + JSON.stringify(db) + "```"); //DEBUG
     } else { //DEBUG
     if(message.channel.name === channel && message.author.bot != true) {
-        if(LocalDatabase.Get(message.author.id) === null) {
+        const challenge = await Challenge.findOne({ where: { userId: message.author.id } })
+        if(LocalDatabase.Get(message.author.id) === null && challenge === null) {
             console.log(message.channel.name);
             var messageObject = parseMessage(message.content);
             if(Array.isArray(messageObject) === true) {
@@ -106,6 +109,22 @@ client.on('message', async (message) => {
                 message.delete();
             } else {
                 LocalDatabase.Set(message.author.id, messageObject);
+                try {                    
+                    await Challenge.create({
+                        userId: message.author.id,
+                        messageId: message.id,
+                        title: messageObject.challenge,
+                        time: messageObject.time || null,
+                        description: messageObject.description || null,
+                        worth: messageObject.worth,
+                        type: messageObject.type || null,
+                        username: messageObject.username || null,
+                        negative: messageObject.negative,
+                        positive: messageObject.positive
+                    })
+                } catch (error) {
+                    console.error(error)
+                }
                 console.log(message.author.id);
                 message.react("✅");
                 message.react("❌");
@@ -124,14 +143,14 @@ client.on('message', async (message) => {
 client.on('messageDelete', async (message) => {
     if (message.partial) {
             try {
-                await message.fetch();
+                // await message.fetch(true);
+                // LocalDatabase.Set(message.author.id, null);
+                await Challenge.destroy({ where: { messageId: message.id } })
             } catch (error) {
-                console.error('Something went wrong when fetching the message: ', error);
-                LocalDatabase.Set(message.author.id, null);
-                return;
+                return console.error('Something went wrong when fetching the message: ', error);
             }
         }
-    if(message.channel.name === channel && message.author.bot != true) {
+    else if(message.channel.name === channel && message.author.bot != true) {
         if(fakeDelete.includes(message.author.id)) {
             var index = fakeDelete.indexOf(message.author.id);
             if (index > -1) {
@@ -140,6 +159,11 @@ client.on('messageDelete', async (message) => {
         }
         else if(await LocalDatabase.Get(message.author.id) != null) {
             LocalDatabase.Set(message.author.id, null);
+            try {
+                await Challenge.destroy({ where: { userId: message.author.id } })
+            } catch (error) {
+                console.error(error)
+            }
         }
     }
 });
@@ -159,6 +183,7 @@ async function updateVotes (reaction) {
 		try {
 			await reaction.fetch();
 		} catch (error) {
+            console.log('ERROR IS HERE')
 			console.error('Something went wrong when fetching the message: ', error);
 			// Return as `reaction.message.author` may be undefined/null
 			return;
@@ -171,11 +196,13 @@ async function updateVotes (reaction) {
             case(yesEmoji): {
                 messageObject.positive = reaction.count;
                 LocalDatabase.Set(reaction.message.author.id, messageObject);
+                await Challenge.update({ positive: reaction.count }, { where: { userId: reaction.message.author.id }})
                 break;
             }
             case(noEmoji): {
                 messageObject.negative = reaction.count;
                 LocalDatabase.Set(reaction.message.author.id, messageObject);
+                await Challenge.update({ negative: reaction.count }, { where: { userId: reaction.message.author.id }})
                 break;
             }
             default: {
@@ -191,6 +218,17 @@ async function updateVotes (reaction) {
             reaction.message.delete();
         } else {
             LocalDatabase.Set(reaction.message.author.id, newMessageObject);
+            // await Challenge.create({
+            //     userId: reaction.message.author.id,
+            //     title: newMessageObject.challenge,
+            //     time: newMessageObject.time || null,
+            //     description: newMessageObject.description || null,
+            //     worth: newMessageObject.worth,
+            //     type: newMessageObject.type || null,
+            //     username: newMessageObject.username || null,
+            //     negative: newMessageObject.negative,
+            //     positive: newMessageObject.positive
+            // })
             console.log(reaction.message.author.id);
             reaction.message.react("✅");
             reaction.message.react("❌");
