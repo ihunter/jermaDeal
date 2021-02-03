@@ -56,9 +56,15 @@ client.on("message", async (message) => {
 
         const dealData = await parseDeal(message)
 
-        // Add vote reactions to the message
-        await message.react(yesEmoji)
-        await message.react(noEmoji)
+        if (!dealData) return
+
+        try {
+            // Add vote reactions to the message
+            await message.react(yesEmoji)
+            await message.react(noEmoji)
+        } catch (error) {
+            console.error("Error adding vote reactions to message", error)
+        }
 
         // Add challenge to database
         try {
@@ -101,7 +107,7 @@ async function parseDeal(message) {
             const reply = await message.reply(`Formatting Incorrect. The correct formatting is: \n Challenge: \n (Optional) Time: \n Worth: `)
             await message.delete()
             await reply.delete({ timeout: 20000 })
-            return
+            return null
         }
 
         // Parse time into milliseconds
