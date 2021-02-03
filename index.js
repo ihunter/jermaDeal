@@ -76,12 +76,12 @@ client.on("messageDelete", async (message) => {
     try {
         await Deal.destory({ where: { messageId: message.id } })
     } catch (error) {
-        console.log("Error deleteing deal from the database:", error)
+        console.error("Error deleteing deal from the database:", error)
     }
 });
 
 client.on("messageReactionAdd", async (reaction) => {
-    console.log(reaction)
+    updateVotes(reaction);
 });
 
 client.on("messageReactionRemove", async (reaction) => {
