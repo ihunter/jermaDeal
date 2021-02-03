@@ -41,12 +41,9 @@ client.on("message", async (message) => {
             }
         }
     } else if (message.channel.name === channel) {
-        const authorId = message.author.id
-        const msgId = message.id
-
         let deal
         try {
-            deal = await Deal.findOne({ where: { userId: authorId } })
+            deal = await Deal.findOne({ where: { userId: message.author.id } })
         } catch (error) {
             console.error('Error checking database for existing entry:', error)
         }
