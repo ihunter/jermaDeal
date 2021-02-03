@@ -71,7 +71,7 @@ client.on("message", async (message) => {
 
 client.on("messageDelete", async (message) => {
     try {
-        await Deal.destory({ where: { messageId: message.id } })
+        await Deal.destroy({ where: { messageId: message.id } })
     } catch (error) {
         console.error("Error deleteing deal from the database:", error)
     }
@@ -87,25 +87,32 @@ client.on("messageReactionRemove", async (reaction) => {
 
 async function parseDeal(message) {
     try {
+        // Split message by new line then : and then remove whitespace
         const deal = message.content.toLowerCase().split('\n')
         .map(entry => {
             return entry.split(':').map(e => e.trim())
         })
 
+        // Convert array of key value pairs into object
         const dealObj = Object.fromEntries(deal)
 
+        // Check for required parameters
         if (!dealObj.challenge || !dealObj.worth) {
             const reply = await message.reply(`Formatting Incorrect. The correct formatting is: \n Challenge: \n (Optional) Time: \n Worth: `)
             await message.delete()
             await reply.delete({ timeout: 20000 })
+            return
         }
 
+        // Parse time into milliseconds
         if (dealObj.time) {
             dealObj.time = parseTime(dealObj.time, 'ms')
         }
 
+        // Parse worth as currency
         dealObj.worth = parseCurrency(dealObj.worth).value
 
+        // Add meta data about the message and author
         dealObj.userId = message.author.id
         dealObj.messageId = message.id
         dealObj.username = message.author.tag
